@@ -7,9 +7,10 @@ const app = express()
 app.use(express.json()); // Récup formulaire dans req.body
 mongoose
   .connect(
-    "mongodb+srv://theo:NodeQuiz@node-quiz.llttoxg.mongodb.net/?retryWrites=true&w=majority")
+    "mongodb+srv://theo:aaaaaaa@cluster0.lvqfnln.mongodb.net/?retryWrites=true&w=majority") // finalement réussi à me connecter...
+    // "mongodb+srv://theo:NodeQuiz@node-quiz.llttoxg.mongodb.net/?retryWrites=true&w=majority")
   .then(() => console.log("Connexion à MongoDB réussie !"))
-  .catch(() => console.log("Connexion à MongoDB échouée !"));
+  .catch((error) => console.log("Connexion à MongoDB échouée !", error));
 
 
 app.use((req, res, next) => {
