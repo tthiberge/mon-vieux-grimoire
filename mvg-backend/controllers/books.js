@@ -1,8 +1,9 @@
-const Book = require('..book/models/book')
+const Book = require('../models/book')
 
 exports.createBook = (req, res) => {
   // manque token
-  const book = new Book(req.body)
+  delete req.body._id
+  const book = new Book(req.body) // ou new Book({...req.body})
   book.save()
   .then(book => res.status(200).json({message: "Le livre a bien été créé"}))
   .catch(error => res.status(400).json('Error:' + error)).then()

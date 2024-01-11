@@ -1,4 +1,5 @@
-const User = require('..user/models/user')
+const bcrypt = require('bcrypt')
+const User = require('../models/user')
 
 exports.signup = (req, res) => {
   // Hachage du mdp

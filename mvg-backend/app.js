@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const express = require('express')
 
-const authRoutes = require('./routes/auth')
+const userRoutes = require('./routes/user')
 const booksRoutes = require('./routes/books')
 
 const app = express()
@@ -27,8 +27,8 @@ app.use((req, res, next) => {
   next(); // Après vérification, passage aux middlewares suivants
 });
 
-app.use('/api/auth', routes)
-app.use('/api/books', routes)
+app.use('/api/auth', userRoutes)
+app.use('/api/books', booksRoutes)
 
 
 
