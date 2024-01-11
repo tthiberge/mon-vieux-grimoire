@@ -1,12 +1,17 @@
 const Book = require('../models/book')
 
 exports.createBook = (req, res) => {
-  // manque token
+  console.log(req.body)
+  console.log('ya')
   delete req.body._id
+  console.log('ye')
   const book = new Book(req.body) // ou new Book({...req.body})
-  book.save()
-  .then(book => res.status(200).json({message: "Le livre a bien été créé"}))
-  .catch(error => res.status(400).json('Error:' + error)).then()
+  console.log('yi')
+  console.log(book)
+  console.log('yo')
+  // book.save()
+  // .then(book => res.status(200).json({message: "Le livre a bien été créé"}))
+  // .catch(error => res.status(400).json('Error:' + error)).then()
 }
 
 exports.getAllBooks = (req, res) => {
