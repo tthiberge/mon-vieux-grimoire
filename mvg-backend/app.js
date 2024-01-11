@@ -108,6 +108,8 @@ app.post('/api/books/:id/rating', async (req, res) => {
       return res.status(200).json({ message: 'Rating added successfully' });
     }
 
+    // Lancer le calcul de averageRating à ce moment là ?
+
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal Server Error' });
