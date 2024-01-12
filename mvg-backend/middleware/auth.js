@@ -5,15 +5,13 @@ module.exports = (req, res, next) => {
       const token = req.headers.authorization.split(' ')[1];
       const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
 
-      console.log(decodedToken)
-
       const userId = decodedToken.userId;
 
-      console.log(req)
+      console.log(req.body)
        req.auth = {
            userId: userId
        };
-       console.log(req)
+       console.log('fin du middleware - avant createBOok')
     next();
    } catch(error) {
        res.status(403).json({ error });
