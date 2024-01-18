@@ -1,17 +1,20 @@
 const Book = require('../models/book')
 
 exports.createBook = (req, res) => {
-  console.log(req.body)
-  console.log('ya')
-  delete req.body._id
-  console.log('ye')
-  const book = new Book(req.body) // ou new Book({...req.body})
-  console.log('yi')
+  const bookObject = JSON.parse(req.body.book)
+  delete bookObject.userId
+
+  const book = new Book({
+    ...bookObject,
+    userId: req.auth.userId,
+    imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+  })
+
+  book.save()
+    .then(() => { res.status(201).json({message: 'Le livre a bien été créé'})})
+    .catch( error => res.status(400).json({error}))
+
   console.log(book)
-  console.log('yo')
-  // book.save()
-  // .then(book => res.status(200).json({message: "Le livre a bien été créé"}))
-  // .catch(error => res.status(400).json('Error:' + error)).then()
 }
 
 exports.getAllBooks = (req, res) => {
@@ -35,11 +38,25 @@ exports.getBestRatedBooks = (req, res) => {
 }
 
 exports.updateOneBook = (req, res) => {
-  // Token
-  // Besoin de mettre à jour l'image ET le livre selon ce qui est chargé
-  Book.updateOne({_id: req.params.id}, {...req.body})
-    .then(() => res.status(200).json({ message: 'Le livre a bien été mis à jour' }))
-    .catch(error => res.status(400).json('Error:' + error));
+  // Regarder si le livre en DB appartient bien à ce userId (vérifié grâce au token)
+  const bookObject = req.file ? {
+    ...JSON.parse(req.body.book),
+    imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+  } : { ...req.body }
+  delete bookObject.userId
+
+  Book.findOne({ _id: req.params.id})
+    .then( book => {
+      if (book.userId != req.auth.userId) {
+        res.status(401).json({message: "Vous n'êtes pas autorisé à modifier le livre"})
+      } else {
+        Book.updateOne({_id: req.params.id}, {...bookObject, _id: req.params.id})
+          .then(() => res.status(200).json({ message: 'Le livre a bien été mis à jour' }))
+          .catch(error => res.status(400).json('Error:' + error));
+      }
+
+    })
+    .catch( error => res.status(400).json({error}))
 }
 
 exports.deleteOneBook = (req, res) => {
