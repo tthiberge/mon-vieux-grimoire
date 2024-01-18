@@ -119,10 +119,7 @@ exports.rateOneBook = async (req, res) => {
       console.log(ratedBook)
 
       ratedBook.save() // Save the changes to the database
-        .then(book => {
-
-          return res.status(200).json({book: book, message: 'Rating added successfully'})
-        })
+        .then(book => res.status(200).json(book))
         .catch( error => res.status(400).json({error}))
     }
 
