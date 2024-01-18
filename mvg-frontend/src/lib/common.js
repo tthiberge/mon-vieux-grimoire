@@ -132,7 +132,6 @@ export async function addBook(data) {
   bodyFormData.append('image', data.file[0]);
 
   try {
-    console.log('dans addbook');
     return await axios({
       method: 'post',
       url: `${API_ROUTES.BOOKS}`,

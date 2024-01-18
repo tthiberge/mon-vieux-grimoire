@@ -1,19 +1,18 @@
 const jwt = require('jsonwebtoken');
 
 module.exports = (req, res, next) => {
-   try {
-      const token = req.headers.authorization.split(' ')[1];
-      const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
+  try {
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET')
+    const userId = decodedToken.userId
 
-      const userId = decodedToken.userId;
+    // On crée un champ dans la requête transmise par la suite pour que nos middlewares suivants aient accès au userId extrait par l'authentification.
+    req.auth = {
+      userId: userId
+    }
 
-      console.log(req.body)
-       req.auth = {
-           userId: userId
-       };
-       console.log('fin du middleware - avant createBOok')
-    next();
-   } catch(error) {
-       res.status(403).json({ error });
-   }
-};
+    next()
+  } catch (error) {
+    return res.status(401).json({error})
+  }
+}
