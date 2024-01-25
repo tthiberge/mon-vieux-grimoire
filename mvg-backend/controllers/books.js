@@ -21,18 +21,8 @@ exports.createBook = async (req, res, next) => {
   // Préparation d'une string unique de dénomination (déporté dans un fichier spécifique)
   const { buffer, compressedName, originalSize} = compression.imageNaming(req)
 
-  // Enregistrement de la photo
-  const responseSharp = await sharp(buffer)
-    .webp({ quality: 20 })
-    .toFile("./images/" + compressedName);
-
-  // Information sur la compression
-  console.log(
-    "Compression:",
-    `Avant: ${(originalSize / 1000000).toFixed(2)} Mo -`,
-    `Après: ${(responseSharp.size / 1000000).toFixed(2)} Mo -`,
-    `Taux de compression: ${((1-(responseSharp.size / originalSize))*100).toFixed(2)}%`
-    )
+  // Compression et enregistrement de la photo avec message lié à la compression (déporté dans un fichier spécifique)
+  await compression.compressingWithSharp(buffer, compressedName, originalSize)
 
 
   // Récupération des informations du formulaire et ajout du userId sécurisé et imageUrl
@@ -71,15 +61,30 @@ exports.getBestRatedBooks = (req, res) => {
   .catch(error => res.status(400).json('Error:' + error));
 }
 
-exports.updateOneBook = (req, res) => {
-  // Regarder si le livre en DB appartient bien à ce userId (vérifié grâce au token)
-  const bookObject = req.file ?
-  {
-    ...JSON.parse(req.body.book),
-    imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-  } :
-  { ...req.body }
+exports.updateOneBook = async (req, res) => {
+
+  // Création de l'objet à enregistrer selon ce qui a été modifié
+  let bookObject
+
+  if (req.file) {
+    // Si présence d'un fichier, on le compresse et on l'enregsitre
+    // Préparation d'une string unique de dénomination
+    const { buffer, compressedName, originalSize} = compression.imageNaming(req)
+
+    // Compression et enregistrement de la photo
+    await compression.compressingWithSharp(buffer, compressedName, originalSize)
+
+    bookObject = {
+      ...JSON.parse(req.body.book),
+      imageUrl: `${req.protocol}://${req.get('host')}/images/${compressedName}`
+    }
+  } else {
+    // En l'absence de modification de l'image, le bookObject correspond au corps de la requête
+    bookObject = { ...req.body }
+  }
   delete bookObject.userId
+
+  console.log('bookObject', bookObject)
 
   Book.findOne({ _id: req.params.id})
     .then( book => {
