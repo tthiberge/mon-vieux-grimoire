@@ -1,9 +1,74 @@
 const Book = require('../models/book')
 const fs = require('fs');
 const ratingUpdated = require('../utils/rating')
+const sharp = require('sharp')
+
+const MIME_TYPES = {
+  'image/jpg': 'webp',
+  'image/jpeg': 'webp',
+  'image/png': 'webp'
+};
+
+exports.createBook = async (req, res, next) => {
+  // Création du dossier /images si celui-ci était manquant
+  fs.access("./uploads", (error) => {
+    if (error) {
+      fs.mkdirSync("./uploads");
+    }
+  })
+
+  // Préparation d'une string unique de dénomination
+  // console.log('req.file', req.file)
+  const { buffer, originalname, mimetype } = req.file;
+  console.log('mimetype', mimetype)
+  console.log('originalName', typeof originalname)
+
+  // const name1 = originalname.split(' ').join('_')
+  // console.log('name1', name1)
+
+  // let name2
+  // if (mimetype === 'image/png') name2 = originalname.split(' ').join('_').split('.png')[0]
+
+  // console.log('name2', name2)
+
+  // console.log(originalname.split(' ').join('_').split('.jpg')[0])
+  // console.log()
+  // console.log()
+  // console.log()
+  // console.log()
+
+  // const changeMimetype = (mimetype, name) => {
+  //   if (mimetype === 'image/jpg') {
+  //     console.log(mimetype === 'image/jpg')
+  //     console.log(originalname.split(' ').join('_').split('.jpg')[0])
+  //     return originalname.split(' ').join('_').split('.jpg')[0]
+  //   } else if (mimetype === 'image/jpeg') {
+  //     console.log(mimetype === 'image/jpeg')
+  //     console.log(originalname.split(' ').join('_').split('.jpeg')[0])
+  //     return originalname.split(' ').join('_').split('.jpeg')[0]
+  //   } else if (mimetype === 'image/png') {
+  //     console.log(mimetype === 'image/png')
+  //     console.log(originalname.split(' ').join('_').split('.png')[0])
+  //     return originalname.split(' ').join('_').split('.png')[0]
+  //   }
+  // }
+
+  // console.log('test fonction', changeMimetype(mimetype, originalname))
+
+  // console.log('newCleanName', newCleanName)
+
+  // const extension = MIME_TYPES[mimetype];
+  // console.log('extension', extension)
+
+  const newName = `${name2}-${Date.now()}.webp`
+  console.log('newName', newName)
+
+  // Enregistrement de la photo
+  await sharp(buffer)
+    .webp({ quality: 20 })
+    .toFile("./images/" + newName);
 
 
-exports.createBook = (req, res, next) => {
   const bookObject = JSON.parse(req.body.book)
   delete bookObject.userId
 
@@ -12,15 +77,16 @@ exports.createBook = (req, res, next) => {
   const book = new Book({
     ...bookObject,
     userId: req.auth.userId,
-    imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+    // imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}` // If using diskStorage
+    imageUrl: `${req.protocol}://${req.get('host')}/images/${newName}` // If using memoryStorage
   })
 
   console.log(book)
 
 
-  book.save()
-    .then(() => { res.status(201).json({book: book, message: 'Le livre a bien été créé'})})
-    .catch( error => res.status(400).json({error}))
+  // book.save()
+  //   .then(() => { res.status(201).json({book: book, message: 'Le livre a bien été créé'})})
+  //   .catch( error => res.status(400).json({error}))
 }
 
 exports.getAllBooks = (req, res) => {
