@@ -1,36 +1,33 @@
+# Mon vieux Grimoire
 
-git clone
 
-npm install
-npm install --force si besoin
+## Comment lancer le projet ? 
 
-nodemon server pour lancer le server.
+### Avec npm
+
+Faites la commande `npm install` pour installer les dépendances (eventuellement `npm install --force` en cas de conflits) puis `nodemon server` pour lancer le projet. 
+
 Les logs s'afficheront dans la console.
 
-La DB du projet utilise un service cloud Mongo DB Atlas.
-Vous pouvez lancer le projet en local en indiquant dans les variables d'environnement vos propres identifiants pour Mongo Atlas
+### Base de données et variables d'environnement
 
-Créer un cluster sur votre compte mongo DB Atlas
-/!\ choisissez d'autoriser toutes les adresses IP, ou uniquement la votre
+La base de données du projet utilise un service cloud Mongo DB Atlas.
+Vous pouvez lancer le projet en local en indiquant dans les variables d'environnement vos propres identifiants pour Mongo Atlas.
+
+Vous aurez besoin de créer votre propre cluster sur votre compte mongo DB Atlas.
 
 Renseigner les variables d'environnement liées à votre cluster:
 
-1.
+Vous trouverez dans le clone que vous aurez effectué un fichier `.env.example` reprenant les variables d'environnements prévues dans le projet.
+NB: Les valeurs indiquées sont des placeholders, à vous d'indiquer vos valeurs correspondantes.
 
-don't forget to copy env file or ask for it
+Copier le fichier `.env.example` en un fichier .env qui contiendra vos propres valeurs:
 ```shell
 cp env.example .env
 ```
 
-Supprimer env.example et dans .env, remplissez les valeurs de vos variables
+Supprimer `env.example`.
 
+Une fois vos valeurs Mongo Atlas indiquées dans `.env`, le projet devrait tourner!
 
-
-
-FRONT:
-git clone
-
-npm install
-
-
-npm start pour lancer le serveur. Se rendre sur localhost 3000
+### Happy book-reading!
