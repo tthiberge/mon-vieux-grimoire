@@ -1,5 +1,8 @@
 # Mon vieux Grimoire
 
+## Cloner le projet
+
+Cloner le projet `mvg-backend` sur votre machine puis rendez vous dans le dossier correspondant.
 
 ## Comment lancer le projet ? 
 
