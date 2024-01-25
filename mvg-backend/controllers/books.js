@@ -1,6 +1,7 @@
 const Book = require('../models/book')
 const fs = require('fs');
 const ratingUpdated = require('../utils/rating')
+const compression = require('../utils/compression')
 const sharp = require('sharp')
 
 const MIME_TYPES = {
@@ -17,76 +18,37 @@ exports.createBook = async (req, res, next) => {
     }
   })
 
-  // Préparation d'une string unique de dénomination
-  // console.log('req.file', req.file)
-  const { buffer, originalname, mimetype } = req.file;
-  console.log('mimetype', mimetype)
-  console.log('originalName', typeof originalname)
-
-  // const name1 = originalname.split(' ').join('_')
-  // console.log('name1', name1)
-
-  // let name2
-  // if (mimetype === 'image/png') name2 = originalname.split(' ').join('_').split('.png')[0]
-
-  // console.log('name2', name2)
-
-  // console.log(originalname.split(' ').join('_').split('.jpg')[0])
-  // console.log()
-  // console.log()
-  // console.log()
-  // console.log()
-
-  // const changeMimetype = (mimetype, name) => {
-  //   if (mimetype === 'image/jpg') {
-  //     console.log(mimetype === 'image/jpg')
-  //     console.log(originalname.split(' ').join('_').split('.jpg')[0])
-  //     return originalname.split(' ').join('_').split('.jpg')[0]
-  //   } else if (mimetype === 'image/jpeg') {
-  //     console.log(mimetype === 'image/jpeg')
-  //     console.log(originalname.split(' ').join('_').split('.jpeg')[0])
-  //     return originalname.split(' ').join('_').split('.jpeg')[0]
-  //   } else if (mimetype === 'image/png') {
-  //     console.log(mimetype === 'image/png')
-  //     console.log(originalname.split(' ').join('_').split('.png')[0])
-  //     return originalname.split(' ').join('_').split('.png')[0]
-  //   }
-  // }
-
-  // console.log('test fonction', changeMimetype(mimetype, originalname))
-
-  // console.log('newCleanName', newCleanName)
-
-  // const extension = MIME_TYPES[mimetype];
-  // console.log('extension', extension)
-
-  const newName = `${name2}-${Date.now()}.webp`
-  console.log('newName', newName)
+  // Préparation d'une string unique de dénomination (déporté dans un fichier spécifique)
+  const { buffer, compressedName, originalSize} = compression.imageNaming(req)
 
   // Enregistrement de la photo
-  await sharp(buffer)
+  const responseSharp = await sharp(buffer)
     .webp({ quality: 20 })
-    .toFile("./images/" + newName);
+    .toFile("./images/" + compressedName);
+
+  // Information sur la compression
+  console.log(
+    "Compression:",
+    `Avant: ${(originalSize / 1000000).toFixed(2)} Mo -`,
+    `Après: ${(responseSharp.size / 1000000).toFixed(2)} Mo -`,
+    `Taux de compression: ${((1-(responseSharp.size / originalSize))*100).toFixed(2)}%`
+    )
 
 
+  // Récupération des informations du formulaire et ajout du userId sécurisé et imageUrl
   const bookObject = JSON.parse(req.body.book)
   delete bookObject.userId
-
-  console.log(bookObject)
 
   const book = new Book({
     ...bookObject,
     userId: req.auth.userId,
-    // imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}` // If using diskStorage
-    imageUrl: `${req.protocol}://${req.get('host')}/images/${newName}` // If using memoryStorage
+    imageUrl: `${req.protocol}://${req.get('host')}/images/${compressedName}`
   })
 
-  console.log(book)
 
-
-  // book.save()
-  //   .then(() => { res.status(201).json({book: book, message: 'Le livre a bien été créé'})})
-  //   .catch( error => res.status(400).json({error}))
+  book.save()
+    .then(() => { res.status(201).json({book: book, message: 'Le livre a bien été créé'})})
+    .catch( error => res.status(400).json({error}))
 }
 
 exports.getAllBooks = (req, res) => {
@@ -111,10 +73,12 @@ exports.getBestRatedBooks = (req, res) => {
 
 exports.updateOneBook = (req, res) => {
   // Regarder si le livre en DB appartient bien à ce userId (vérifié grâce au token)
-  const bookObject = req.file ? {
+  const bookObject = req.file ?
+  {
     ...JSON.parse(req.body.book),
     imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-  } : { ...req.body }
+  } :
+  { ...req.body }
   delete bookObject.userId
 
   Book.findOne({ _id: req.params.id})
