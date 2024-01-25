@@ -84,8 +84,6 @@ exports.updateOneBook = async (req, res) => {
   }
   delete bookObject.userId
 
-  console.log('bookObject', bookObject)
-
   Book.findOne({ _id: req.params.id})
     .then( book => {
       if (book.userId != req.auth.userId) {
