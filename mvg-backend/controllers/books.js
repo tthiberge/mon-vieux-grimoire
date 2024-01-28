@@ -92,15 +92,18 @@ exports.updateOneBook = async (req, res) => {
         // Lorsqu'une photo est updatée, supprimer celle que la nouvelle remplace
         const filename = book.imageUrl.split('/images/')[1];
 
-        console.log(book.imageUrl)
-        bookObject.imageUrl = book.imageUrl
-        console.log(bookObject)
-
-        fs.unlink(`images/${filename}`, () => {
-        Book.updateOne({_id: req.params.id}, {...bookObject, _id: req.params.id})
+        if (req.file) {
+          fs.unlink(`images/${filename}`, () => {
+            Book.updateOne({_id: req.params.id}, {...bookObject, _id: req.params.id})
+            .then(() => res.status(200).json({ message: 'Le livre a bien été mis à jour' }))
+            .catch(error => res.status(400).json('Error:' + error));
+          })
+        } else {
+          bookObject.imageUrl = book.imageUrl
+          Book.updateOne({_id: req.params.id}, {...bookObject, _id: req.params.id})
           .then(() => res.status(200).json({ message: 'Le livre a bien été mis à jour' }))
           .catch(error => res.status(400).json('Error:' + error));
-        })
+        }
       }
     })
     .catch( error => res.status(400).json({error}))
