@@ -2,22 +2,8 @@ const Book = require('../models/book')
 const fs = require('fs');
 const ratingUpdated = require('../utils/rating')
 const compression = require('../utils/compression')
-const sharp = require('sharp')
-
-const MIME_TYPES = {
-  'image/jpg': 'webp',
-  'image/jpeg': 'webp',
-  'image/png': 'webp'
-};
 
 exports.createBook = async (req, res, next) => {
-  // Création du dossier /images si celui-ci était manquant
-  fs.access("./uploads", (error) => {
-    if (error) {
-      fs.mkdirSync("./uploads");
-    }
-  })
-
   // Préparation d'une string unique de dénomination (déporté dans un fichier spécifique)
   const { buffer, compressedName, originalSize} = compression.imageNaming(req)
 
@@ -132,13 +118,13 @@ exports.rateOneBook = async (req, res) => {
     const ratedBook = await Book.findOne({_id: req.params.id})
 
     if (!ratedBook) {
-      return res.status(404).json({ error: 'Book not found' });
+      return res.status(404).json({ error: "Le livre n'existe pas" });
     }
 
     const ratedIds = ratedBook.ratings.map(rating => rating.userId)
 
     if (ratedIds.includes(req.auth.userId)) {
-      return res.status(400).json({ error: 'You have already rated this book' });
+      return res.status(400).json({ error: 'Vous avez déjà noté ce livre' });
 
     } else {
       // Nouveau rating avec userId sécurisé grâce au jwt
